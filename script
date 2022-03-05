@@ -1,0 +1,72 @@
+'use strict';
+
+let bank = [];
+const getBank = () => JSON.parse(localStorage.getItem ('todoList')) ?? [];
+const setBank = (bank) => localStorage.setItem('todoList', JSON.stringify(bank));
+
+const createItem = (tarefa, status, indice) => {
+    const item = document.createElement('label');
+    item.classList.add('tasks-item');
+    item.innerHTML = `
+        <input type="checkbox" ${status} data-indice=${indice}>
+        <div>${tarefa}</div>
+        <input type="button" value="X" data-indice=${indice}>`;
+
+        document.getElementById('todoList').appendChild(item);
+}
+
+const cleanTasks = () => {
+    const todoList = document.getElementById('todoList');
+    while (todoList.firstChild) {
+        todoList.removeChild(todoList.lastChild);
+    }
+}
+
+const refreshScreen = () => {
+    cleanTasks();
+    const bank = getBank();
+    bank.forEach ((item, indice) => createItem (item.tarefa, item.status, indice));
+}
+
+const insertItem = (evento) => {
+    const tecla = evento.key;
+    const texto = evento.target.value;
+    if (tecla === 'Enter') {
+        const bank = getBank();
+        bank.push ({'tarefa': texto, 'status': ''});
+        setBank(bank);
+        refreshScreen();
+        evento.target.value = ''; 
+    }
+}
+
+const removeItem = (indice) => {
+    const bank = getBank();
+    bank.splice (indice, 1);
+    setBank(bank);
+    refreshScreen();
+}
+
+const refreshItem = (indice) => {
+    const bank = getBank();
+    bank[indice].status = bank[indice].status === '' ? "checked" : '';
+    setBank(bank);
+    refreshScreen();
+}
+
+const clickItem = (evento) => {
+    const element = evento.target;
+    console.log(element.type);
+    if (element.type === 'button') {
+        const indice = element.dataset.indice;
+        removeItem (indice);
+    } else if (element.type === 'checkbox') {
+        const indice = element.dataset.indice;
+        refreshItem(indice);
+    }
+}
+
+document.getElementById('new-item').addEventListener('keypress', insertItem);
+document.getElementById('todoList').addEventListener('click', clickItem);
+
+refreshScreen();
